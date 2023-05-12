@@ -1,46 +1,87 @@
 import networkx as nx 
 from typing import List, Tuple, Dict
+import numpy as np 
 from collaboration_network import metrics 
 from collaboration_network import algorithms
 import pandas as pd 
 from time import time
+from tqdm import tqdm
+from collaboration_network import utils
 
 class Benchmark:
     def __init__(
             self, 
             G: nx.Graph, 
             algorithms: List[Tuple[algorithms.Algorithm, Dict]], 
-            metrics: List[metrics.Metric], 
-            n_iters=10
+            metrics: List[Tuple[metrics.Metric, Dict]], 
+            n_iters=10, 
+            linkage=False,
+            min_thres=0.0,
+            max_thres=1.0,
+            num_thres=20,
+            weight: str = "weight"
         ):
         self.G = G
         self.algorithms = algorithms
         self.metrics = metrics 
         self.n_iters = n_iters
+        self.linkage = linkage
+        if self.linkage:
+            step = (max_thres - min_thres) / (num_thres - 1)
+            self.linkage_threshold = np.arange(min_thres, max_thres+step, step)
+            self.weight = weight
+
+    def run_one_step(self, G, algorithm):
+        metric_result = {}
+
+        start_s = time()
+        partition = algorithm(G)
+        metric_result['exec_time'] = time() - start_s
+
+        for metric_class, params in self.metrics:
+            metric = metric_class(**params)
+            metric_result[metric.name] = metric(G, partition)
+
+        return metric_result
+        
 
     def run(self):
         results = []
         for algorithm_class , params in self.algorithms:
             algorithm = algorithm_class(**params)
+            print(f'Running algorithm: {algorithm.name}')
 
-            for rtime in range(self.n_iters):
-                runtime_result = {}
+            for rtime in tqdm(range(self.n_iters)):
+                if not self.linkage:
+                    runtime_result = dict(
+                        run_id = rtime, 
+                        method = algorithm.name,
+                    )
+                    try:
+                        metric_result = self.run_one_step(self.G, algorithm)
+                    except:
+                        continue
+                    runtime_result.update(metric_result)
 
-                start_s = time()
-                partition = algorithm(self.G)
-                exec_time = time()-start_s 
+                    results.append(runtime_result)
+                else:
+                    for thres in tqdm(self.linkage_threshold):
+                        runtime_result = dict(
+                            run_id = rtime, 
+                            method = algorithm.name,
+                            linkage_thres = thres
+                        )
 
-                runtime_result.update(dict(
-                    run_id=rtime,
-                    method=algorithm.name,
-                    execution_time=exec_time
-                ))
+                        G_sub = utils.prune_graph(self.G, thres, self.weight)
+                        try:
+                            metric_result = self.run_one_step(G_sub, algorithm)
+                        except Exception as e:
+                            continue
 
-                for metric_class in self.metrics:
-                    metric = metric_class()
-                    runtime_result[metric.name] = metric(self.G, partition)
-                
-                results.append(runtime_result)
+                        runtime_result.update(metric_result)
+
+                        results.append(runtime_result)
+
         
         return pd.DataFrame(results)
 

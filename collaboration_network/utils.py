@@ -1,5 +1,6 @@
 import os
 import re
+import networkx as nx
 import functools as ft
 
 import pandas as pd 
@@ -41,3 +42,11 @@ def merge_paper(x: pd.DataFrame):
     paper_ids = ft.reduce(lambda cur, next: cur + next, x.paper_ids, [])
 
     return pd.Series(dict(last_name=last_name, first_name=first_name, paper_ids=paper_ids))
+
+def prune_graph(G: nx.Graph, threshold: float, weight: str='weight'):
+    G_sub = G.copy() 
+    edge_to_removes = [(u,v) for u,v in G.edges() if G[u][v][weight] < threshold]
+
+    G_sub.remove_edges_from(edge_to_removes)
+
+    return G_sub
