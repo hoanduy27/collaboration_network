@@ -1,0 +1,16 @@
+matlab_raw_file: data/nips12raw_str602.mat
+idx_files: 
+  - data/nipstxt/idx/a04.txt
+  - data/nipstxt/idx/a05.txt
+  - data/nipstxt/idx/a06.txt
+  - data/nipstxt/idx/a07.txt
+  - data/nipstxt/idx/a08.txt
+
+author_map: data/authors_group.csv
+
+weight_type:
+  - direct
+  - indirect
+
+weight_conf:
+  alpha: 0.8
