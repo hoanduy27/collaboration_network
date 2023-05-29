@@ -1,12 +1,18 @@
-import os 
+import os
 import argparse
+import glob
+import yaml
 import networkx as nx
 
-from collaboration_network.graph import CollaborationGraph
+from collaboration_network.graph_new import CollaborationGraph
 
 
 def create_graph(args):
-    G = CollaborationGraph.from_config(args.config_path)
+    with open(args.config_path, 'r') as f:
+        config = yaml.load(f, Loader=yaml.Loader)
+        graph_args = argparse.Namespace(**config)
+
+    G = CollaborationGraph.from_config(graph_args)
     graph_name = os.path.splitext(os.path.basename(args.config_path))[0]
 
     savepath = os.path.join('graphs', graph_name+'.gml')

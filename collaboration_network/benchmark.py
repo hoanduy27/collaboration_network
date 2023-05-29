@@ -17,7 +17,7 @@ class Benchmark:
             n_iters=10, 
             linkage=False,
             min_thres=0.0,
-            max_thres=1.0,
+            max_thres='auto',
             num_thres=20,
             weight: str = "weight"
         ):
@@ -26,10 +26,13 @@ class Benchmark:
         self.metrics = metrics 
         self.n_iters = n_iters
         self.linkage = linkage
+        self.weight = weight
+
         if self.linkage:
+            if max_thres == 'auto':
+                max_thres = max(G[u][v][weight] for u,v in G.edges())
             step = (max_thres - min_thres) / (num_thres - 1)
             self.linkage_threshold = np.arange(min_thres, max_thres+step, step)
-            self.weight = weight
 
     def run_one_step(self, G, algorithm):
         metric_result = {}
