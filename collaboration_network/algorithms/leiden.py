@@ -19,5 +19,5 @@ class Leiden(Algorithm):
         return partition
     
     @property
-    def name(self):
+    def default_name(self):
         return 'leiden'

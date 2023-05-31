@@ -1,12 +1,14 @@
-import networkx as nx 
-from typing import List, Tuple, Dict
-import numpy as np 
-from collaboration_network import metrics 
-from collaboration_network import algorithms
-import pandas as pd 
 from time import time
+from typing import Dict, List, Tuple
+import logging
+
+import networkx as nx
+import numpy as np
+import pandas as pd
 from tqdm import tqdm
-from collaboration_network import utils
+
+
+from collaboration_network import algorithms, metrics, utils
 
 class Benchmark:
     def __init__(
@@ -63,6 +65,7 @@ class Benchmark:
                     try:
                         metric_result = self.run_one_step(self.G, algorithm)
                     except:
+                        logging.error(e)
                         continue
                     runtime_result.update(metric_result)
 
@@ -79,6 +82,7 @@ class Benchmark:
                         try:
                             metric_result = self.run_one_step(G_sub, algorithm)
                         except Exception as e:
+                            logging.error(e)
                             continue
 
                         runtime_result.update(metric_result)

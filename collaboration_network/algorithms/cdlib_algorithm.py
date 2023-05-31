@@ -12,11 +12,8 @@ class CDLibAlgorithm(Algorithm):
             self, 
             algorithm: Union[str, Callable], 
             algorithm_params: Dict = {}, 
-            name: str = None, 
             *args, **kwargs
         ):
-        super(CDLibAlgorithm, self).__init__(name, *args, **kwargs)
-
         if isfunction(algorithm):
             self.algorithm = algorithm
         
@@ -26,9 +23,10 @@ class CDLibAlgorithm(Algorithm):
         else:
             raise ValueError("algorithm should be string (function name) or Callable of cdlib.evaluation")
         
+        super(CDLibAlgorithm, self).__init__(*args, **kwargs)
+
+        
         self.algorithm_params = algorithm_params
-        if name is None:
-            self.name = self.algorithm.__name__
 
     def __call__(self, G: nx.Graph):
         community = self.algorithm(G, **self.algorithm_params)
@@ -36,3 +34,13 @@ class CDLibAlgorithm(Algorithm):
         partition = {k:partition[k][0] for k in G.nodes()}  
         
         return partition
+    
+    @property
+    def default_name(self):
+        if isfunction(self.algorithm):
+            return self.algorithm.__name__
+        elif isinstance(self.algorithm, str):
+            return self.algorithm
+        else:
+            raise RuntimeError("Algorithm type not valid. To fix, read code.")
+        
