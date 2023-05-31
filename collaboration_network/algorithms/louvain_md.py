@@ -21,7 +21,7 @@ class LouvainMD(Algorithm):
         self.randomize = randomize
         self.random_state = random_state
 
-    def __call__(self, G: nx.Graph) -> Dict:
+    def call(self, G: nx.Graph) -> Dict:
         if self.scale == 'auto':
             scale = max(G[u][v][self.weight] for u,v in G.edges())
 

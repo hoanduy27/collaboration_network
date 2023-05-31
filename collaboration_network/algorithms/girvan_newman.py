@@ -10,7 +10,7 @@ class GirvanNewman(Algorithm):
     def __init__(self, level=3):
         self.level=level
 
-    def __call__(self, G: nx.Graph) -> Dict:
+    def call(self, G: nx.Graph) -> Dict:
         
         community = cdalg.girvan_newman(G, level=self.level)
         partition = dict(community.to_node_community_map())

@@ -28,7 +28,7 @@ class CDLibAlgorithm(Algorithm):
         
         self.algorithm_params = algorithm_params
 
-    def __call__(self, G: nx.Graph):
+    def call(self, G: nx.Graph):
         community = self.algorithm(G, **self.algorithm_params)
         partition = dict(community.to_node_community_map())
         partition = {k:partition[k][0] for k in G.nodes()}  

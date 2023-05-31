@@ -10,7 +10,7 @@ class Leiden(Algorithm):
     def __init__(self):
         pass 
 
-    def __call__(self, G: nx.Graph) -> Dict:
+    def call(self, G: nx.Graph) -> Dict:
         
         community = cdalg.leiden(G)
         partition = dict(community.to_node_community_map())

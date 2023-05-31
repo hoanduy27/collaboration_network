@@ -36,16 +36,16 @@ class Benchmark:
             step = (max_thres - min_thres) / (num_thres - 1)
             self.linkage_threshold = np.arange(min_thres, max_thres+step, step)
 
-    def run_one_step(self, G, algorithm):
+    def run_one_step(self, algorithm, thres=None):
         metric_result = {}
 
         start_s = time()
-        partition = algorithm(G)
+        partition = algorithm(self.G, w_min=thres)
         metric_result['exec_time'] = time() - start_s
 
         for metric_class, params in self.metrics:
             metric = metric_class(**params)
-            metric_result[metric.name] = metric(G, partition)
+            metric_result[metric.name] = metric(self.G, partition)
 
         return metric_result
         
@@ -54,22 +54,25 @@ class Benchmark:
         results = []
         for algorithm_class , params in self.algorithms:
             algorithm = algorithm_class(**params)
+            print(algorithm)
             print(f'Running algorithm: {algorithm.name}')
 
             for rtime in tqdm(range(self.n_iters)):
+                # Not use linkage threshold
                 if not self.linkage:
                     runtime_result = dict(
                         run_id = rtime, 
                         method = algorithm.name,
                     )
                     try:
-                        metric_result = self.run_one_step(self.G, algorithm)
+                        metric_result = self.run_one_step(algorithm)
                     except:
                         logging.error(e)
                         continue
                     runtime_result.update(metric_result)
 
                     results.append(runtime_result)
+                # Use linkage threshold
                 else:
                     for thres in tqdm(self.linkage_threshold):
                         runtime_result = dict(
@@ -78,9 +81,9 @@ class Benchmark:
                             linkage_thres = thres
                         )
 
-                        G_sub = utils.prune_graph(self.G, thres, self.weight)
+                        # G_sub = utils.prune_graph(self.G, thres, self.weight)
                         try:
-                            metric_result = self.run_one_step(G_sub, algorithm)
+                            metric_result = self.run_one_step(algorithm, thres)
                         except Exception as e:
                             logging.error(e)
                             continue

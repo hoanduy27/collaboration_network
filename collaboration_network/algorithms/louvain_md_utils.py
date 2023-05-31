@@ -94,7 +94,7 @@ def partition_at_level(dendrogram, level):
     return partition
 
 
-def modularity(partition, graph, weight='weight'):
+def modularity_density(partition, graph, weight='weight'):
     """Compute the modularity of a partition of a graph
 
     Parameters
@@ -133,7 +133,7 @@ def modularity(partition, graph, weight='weight'):
     >>> import networkx as nx
     >>> G = nx.erdos_renyi_graph(100, 0.01)
     >>> partition = community_louvain.best_partition(G)
-    >>> modularity(partition, G)
+    >>> modularity_density(partition, G)
     """
     if graph.is_directed():
         raise TypeError("Bad graph type, use only non directed graph")
@@ -157,6 +157,7 @@ def modularity(partition, graph, weight='weight'):
 
     res = 0.
     for com in set(partition.values()):
+
         res += (inc.get(com, 0.) / links) - \
                (deg.get(com, 0.) / (2. * links)) ** 2
     return res
@@ -564,12 +565,3 @@ def __randomize(items, random_state):
     randomized_items = list(items)
     random_state.shuffle(randomized_items)
     return randomized_items
-
-
-if __name__ == "__main__":
-    import networkx as nx 
-
-    G = nx.read_gml('/mnt/d/duy/master/math/ass/collaboration_network/graphs/G_dir_alpha0.8_00-04.gml')
-    community = best_partition(G)
-
-
