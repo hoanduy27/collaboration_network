@@ -145,5 +145,7 @@ class CollaborationGraph(nx.Graph):
             
             G = G_flex
 
+        # Remove isolated node
+        G.remove_nodes_from([v for v in G.nodes() if G.degree(v) == 0])
         return G
     
