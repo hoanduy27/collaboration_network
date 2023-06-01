@@ -16,14 +16,17 @@ class Algorithm:
     def call(self, G: nx.Graph):
         raise NotImplementedError
     
-    def __call__(self, G, w_min=None):
+    def __call__(self, G, w_min=None, return_pruned_graph=False):
         G_sub = G.copy()
         if w_min is not None:
             G_sub = self.preprocess_graph(G_sub, w_min) 
 
         partition = self.call(G_sub)
-         
-        return partition
+        
+        if return_pruned_graph:
+            return G_sub, partition
+        else:
+            return partition
 
     @property
     def default_name(self):

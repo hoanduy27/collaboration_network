@@ -40,12 +40,17 @@ class Benchmark:
         metric_result = {}
 
         start_s = time()
-        partition = algorithm(self.G, w_min=thres)
+        G_sub, partition = algorithm(self.G, w_min=thres, return_pruned_graph=True)
         metric_result['exec_time'] = time() - start_s
 
         for metric_class, params in self.metrics:
-            metric = metric_class(**params)
-            metric_result[metric.name] = metric(self.G, partition)
+            try:
+                metric = metric_class(**params)
+                metric_result[metric.name] = metric(self.G, partition).score()
+            except Exception as e:
+                logging.exception(e)
+                metric_result[metric.name] = None 
+                continue
 
         return metric_result
         
@@ -54,7 +59,6 @@ class Benchmark:
         results = []
         for algorithm_class , params in self.algorithms:
             algorithm = algorithm_class(**params)
-            print(algorithm)
             print(f'Running algorithm: {algorithm.name}')
 
             for rtime in tqdm(range(self.n_iters)):
@@ -67,7 +71,7 @@ class Benchmark:
                     try:
                         metric_result = self.run_one_step(algorithm)
                     except:
-                        logging.error(e)
+                        logging.exception(e)
                         continue
                     runtime_result.update(metric_result)
 
@@ -85,7 +89,7 @@ class Benchmark:
                         try:
                             metric_result = self.run_one_step(algorithm, thres)
                         except Exception as e:
-                            logging.error(e)
+                            logging.exception(e)
                             continue
 
                         runtime_result.update(metric_result)

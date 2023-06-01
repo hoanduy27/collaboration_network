@@ -30,11 +30,12 @@ class CDLibMetric(Metric):
         if name is None:
             self.name = self.metric.__name__
 
-    def __call__(self, G: nx.Graph, partition:dict):
+    def call(self, G: nx.Graph, partition:dict):
+        sub_partition = {node:partition[node] for node in partition if node in G}
         communities = []
-        for community in set(partition.values()):
+        for community in set(sub_partition.values()):
             communities.append([
-                node for node in partition if partition[node] == community
+                node for node in sub_partition if sub_partition[node] == community
             ])
 
         nc = NodeClustering(communities, G)
