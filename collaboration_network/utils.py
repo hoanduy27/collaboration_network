@@ -83,31 +83,5 @@ def prune_graph_by_connected_components(G: nx.Graph, min_size=None):
 
     return G_common
 
-if __name__ == '__main__':
-    G = nx.read_gml('/mnt/d/duy/master/math/ass/collaboration_network/graphs/G_dir_alpha0.8_02-06.gml')
-
-    from collaboration_network import algorithms, metrics
-
-    G_louvain, p_louvain = algorithms.CDLibAlgorithm('louvain', dict(randomize=7))(G, w_min=0.2, return_pruned_graph=True)
-    G_lmd, p_lmd = algorithms.LouvainMD(random_state=7)(G, w_min=0.2, return_pruned_graph=True)
-
-    modularity = metrics.CDLibMetric('internal_edge_density')
-    # modularity = metrics.ModularityDensity()
-
-
-    print(modularity(G, p_louvain))
-    print(modularity(G, p_lmd))
-
-    print(modularity(G_louvain, p_louvain))
-    print(modularity(G_lmd, p_lmd))
-
-    
-    # G_prune = prune_graph_by_connected_components(G, 5)
-    # G_prune, p_lmd = prune_graph_by_connected_components(G, None, 5)
-
-    print(modularity(prune_graph_by_connected_components(G_louvain, 5), p_louvain))
-    print(modularity(prune_graph_by_connected_components(G_lmd, 5), p_lmd))
-
-
 
     
