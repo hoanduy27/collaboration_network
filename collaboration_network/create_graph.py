@@ -4,7 +4,7 @@ import glob
 import yaml
 import networkx as nx
 
-from collaboration_network.graph_new import CollaborationGraph
+from collaboration_network.graph import CollaborationGraph
 
 
 def create_graph(args):

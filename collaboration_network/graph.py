@@ -87,16 +87,15 @@ class CollaborationGraph(nx.Graph):
 
                 common_papers = papers_1.intersection(papers_2)
                 if common_papers:
-                    direct_weight = 1
-                    interact_weight = sum(
-                        [paper_info[paper]['n_authors']/np.sqrt(paper_info[paper]['length']) for paper in common_papers]
-                    )/len(common_papers)
+                    direct_weight = sum(
+                        [1/(paper_info[paper]['n_authors'] - 1) for paper in common_papers]
+                    )
+                    
+                    weight = direct_weight
 
-                    weight = direct_weight - beta * interact_weight
                     G.add_edge(author_1, author_2, 
-                               direct_weight=direct_weight, 
-                               interact_weight=interact_weight, 
-                               weight = weight, 
+                        direct_weight=direct_weight, 
+                        weight = weight, 
                     )
         
         if INDIRECT in weight_type and alpha != 1.:
@@ -117,38 +116,36 @@ class CollaborationGraph(nx.Graph):
                     except: 
                         direct_weight = 0 
 
-                    try:
-                        interact_weight = G[u][v]['interact_weight']
-                    except:
-                        interact_weight = 0
+                    # n_u_neighbors = G.degree(u)
+                    # n_v_neighbors = G.degree(v)
+                    common_neighbors = list(nx.common_neighbors(G, u, v))
 
-                    n_u_neighbors = G.degree(u)
-                    n_v_neighbors = G.degree(v)
-                    n_common_neighbors = len(list(nx.common_neighbors(G, u, v)))
+                    w_u = sum(G[u][n]['direct_weight'] for n in G[u])
+                    w_v = sum(G[v][n]['direct_weight'] for n in G[v])
+                    w_u_comm = sum(G[u][n]['direct_weight'] for n in common_neighbors)
+                    w_v_comm = sum(G[v][n]['direct_weight'] for n in common_neighbors)
 
                     indirect_weight = (
-                        (2 * n_common_neighbors) 
-                        / (n_u_neighbors + n_v_neighbors - 2 * direct_weight + 1e-7)
+                        (w_u_comm + w_v_comm) 
+                        / (w_u + w_v - 2 * direct_weight + 1e-7)
                     )
 
                     weight = (
                         alpha*direct_weight 
                         + (1-alpha) * indirect_weight 
-                        - beta * interact_weight)
+                    )
 
 
                     if weight > 0:
                         G_flex.add_edge(u, v, 
                             direct_weight=direct_weight, 
                             indirect_weight=indirect_weight, 
-                            interact_weight=interact_weight,
                             weight = weight,
                         )
             
             G = G_flex
-        
+
         # Remove isolated node
         G.remove_nodes_from([v for v in G.nodes() if G.degree(v) == 0])
-
         return G
     
